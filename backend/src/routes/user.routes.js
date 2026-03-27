@@ -1,9 +1,9 @@
 import {Router} from 'express'
-import { validatePermissionForAcess, verifyJWT } from '../middlewares/auth.middleware';
-import { changeCurrentPassword, changeUsername, deactivateAccount, getCurrentUser, getUser, refreshAcessToken } from '../controllers/user.controller';
-import { changeCurrentPasswordValidator } from '../validators';
-import { validate } from '../middlewares/validator.middlewares';
-import { Roles } from '../utils/constants';
+import { validatePermissionForAcess, verifyJWT } from '../middlewares/auth.middleware.js';
+import { changeCurrentPassword, changeUsername, deactivateAccount, getCurrentUser, getUser, refreshAcessToken } from '../controllers/user.controller.js';
+import { changeCurrentPasswordValidator } from '../validators/index.js';
+import { Roles } from '../utils/constants.js';
+import { validate } from '../middlewares/validator.middlewares.js';
 
 const router = Router();
 
