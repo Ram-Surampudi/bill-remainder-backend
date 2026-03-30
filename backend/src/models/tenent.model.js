@@ -18,7 +18,7 @@ const tenantSchema = new Schema(
             unique:true,
             trim : true,
         },
-        descrpition :{
+        description :{
             type : String,
             trim : true
         },

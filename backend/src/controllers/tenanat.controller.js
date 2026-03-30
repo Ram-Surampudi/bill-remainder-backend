@@ -16,6 +16,8 @@ export const updateIsActiveTenant = asyncHandeler(async (req, res)=>{
     const {id} = req.params;
     const {isActive} = req.body;
 
+    if(typeof isActive !== "boolean") throw new ApiError(400, 'isActive sholud be boolean');
+
     const data = await Tenant.findByIdAndUpdate(new mongoose.Types.ObjectId(id), {$set:{isActive}});
 
     if(!data) throw new ApiError(400, "Tenant not found");
@@ -26,7 +28,7 @@ export const updateIsActiveTenant = asyncHandeler(async (req, res)=>{
 
 export const createTenant = asyncHandeler(async (req, res)=>{
 
-    const {organizationName , descrpition, founderName , slug , email , pics , logo, contactNumber, address} = req.body;
+    const {organizationName , description, founderName , slug , email , pics , logo, contactNumber, address} = req.body;
 
     const tenant = await Tenant.create({
         organizationName ,
@@ -34,7 +36,7 @@ export const createTenant = asyncHandeler(async (req, res)=>{
         contactNumber , 
         email , 
         founderName , 
-        descrpition,
+        description,
         logo , 
         pics , 
         slug , 

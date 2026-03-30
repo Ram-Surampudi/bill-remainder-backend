@@ -37,6 +37,9 @@ export const deactivateAccount = asyncHandeler(async (req, res)=>{
     const {id} = req.params;
     const {isActive} = req.body;
 
+    if(typeof isActive !== "boolean") throw new ApiError(400, 'isActive sholud be boolean');
+    if(!id) throw new ApiError(400, 'id parameter is required');
+
     const user = await User.findById(new mongoose.Types.ObjectId(id));
 
     if(!user) throw new ApiError(400, "cann't find user");
@@ -51,6 +54,9 @@ export const deactivateAccount = asyncHandeler(async (req, res)=>{
 export const changeUsername = asyncHandeler(async (req, res)=>{
 
     const {username} = req.body;
+
+    if(!username) throw new ApiError(400, 'username is required');
+
     const user = await User.findOne({username});
 
     if(user) throw new ApiError(400, "username already exits");
@@ -203,6 +209,8 @@ export const resetForgotPassword = asyncHandeler( async (req, res)=>{
 
     const {newPassword} = req.body; 
 
+    if(!resetToken) throw new ApiError(400, 'resetToken is missing');
+
     let hashedtoken = crypto.createHash('sha256')
                             .update(resetToken)
                             .digest("hex");
@@ -232,19 +240,12 @@ export const refreshAcessToken = asyncHandeler( async (req, res)=>{
 
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
-    console.log(incomingRefreshToken);
-    
-
     if(!incomingRefreshToken) throw new ApiError(400 , "Unauthorized access");
 
     try {
-        const decodedData = await jwt.verify(incomingRefreshToken , process.env.REFRESH_TOKEN_SECRET);
-        console.log(decodedData + "decoded");
-        
-        const user = await User.findById(decodedData?._id);
+        const decodedData = jwt.verify(incomingRefreshToken , process.env.REFRESH_TOKEN_SECRET);
 
-        console.log(user);
-        
+        const user = await User.findById(decodedData?._id);
 
         if(!user) throw new ApiError(400 , 'invalid refresh token');
 
@@ -267,7 +268,6 @@ export const refreshAcessToken = asyncHandeler( async (req, res)=>{
 
     } catch (error) {
         console.log(error);
-        
         throw new ApiError(400 , 'invalid refresh token');
     }
 });

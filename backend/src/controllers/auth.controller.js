@@ -19,6 +19,7 @@ export const createHigherRoles = asyncHandeler(async (req, res)=>{
 
     if(role !== Roles.ADMIN)
     {
+        if(!tenantId) throw new ApiError(400 , 'tenantId is required');
         const tenant = await Tenant.findById(new mongoose.Types.ObjectId(tenantId));
         if(!tenant) throw new ApiError(400 , 'tenant Organization not found');
     }
