@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { emailVerificationMailgenContent, forgetPasswordMailgenContent, sendMail } from "../utils/mail.js";
 import { ApiResponse } from "../utils/api-response.js";
 import mongoose from "mongoose";
+import jwt from 'jsonwebtoken';
 
 
 export const setActiveState = asyncHandeler(async (req, res)=>{
@@ -40,7 +41,7 @@ export const deactivateAccount = asyncHandeler(async (req, res)=>{
 
     if(!user) throw new ApiError(400, "cann't find user");
 
-    if(!RolePermissions[currentUser].includes(user.role)) throw new ApiError(400, "you have no access");
+    if(!RolePermissions[currentUser.role].includes(user.role)) throw new ApiError(400, "you have no access");
 
     await User.findByIdAndUpdate(new mongoose.Types.ObjectId(id), {$set:{isActive}});
 
@@ -50,7 +51,7 @@ export const deactivateAccount = asyncHandeler(async (req, res)=>{
 export const changeUsername = asyncHandeler(async (req, res)=>{
 
     const {username} = req.body;
-    const user = await User.find({username});
+    const user = await User.findOne({username});
 
     if(user) throw new ApiError(400, "username already exits");
 
@@ -137,7 +138,7 @@ export const verifyEmail = asyncHandeler(async (req, res)=>{
 
 export const resendEmail = asyncHandeler(async (req, res)=>{
 
-    const user = User.findById(req.user._id);
+    const user = await User.findById(new mongoose.Types.ObjectId(req.user._id));
 
     if(!user) throw new ApiError("user does not exits");
 
@@ -231,11 +232,19 @@ export const refreshAcessToken = asyncHandeler( async (req, res)=>{
 
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
+    console.log(incomingRefreshToken);
+    
+
     if(!incomingRefreshToken) throw new ApiError(400 , "Unauthorized access");
 
     try {
-        const decodedData = jwt.verify(incomingRefreshToken , process.env.REFRESH_TOKEN_SECRET);
+        const decodedData = await jwt.verify(incomingRefreshToken , process.env.REFRESH_TOKEN_SECRET);
+        console.log(decodedData + "decoded");
+        
         const user = await User.findById(decodedData?._id);
+
+        console.log(user);
+        
 
         if(!user) throw new ApiError(400 , 'invalid refresh token');
 
@@ -257,6 +266,8 @@ export const refreshAcessToken = asyncHandeler( async (req, res)=>{
                   ));
 
     } catch (error) {
+        console.log(error);
+        
         throw new ApiError(400 , 'invalid refresh token');
     }
 });
@@ -268,7 +279,7 @@ export const getUser = asyncHandeler(async (req, res)=>{
 
     const users = await User.find({
         tenantId : user.tenantId,
-        role : {$in:[RolePermissions[user.role]]}
+        role : {$in:RolePermissions[user.role]}
     }).select("profilepic username email fullName role isActive");
 
     return res.status(200).json(new ApiResponse(

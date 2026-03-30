@@ -44,6 +44,10 @@ const tenantSchema = new Schema(
             required : true,
             trim : true
         },
+        isActive :{
+            type : Boolean,
+            default : true
+        },
         activeUsers :{
             type : Number,
             default : 0
